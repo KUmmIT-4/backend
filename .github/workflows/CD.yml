@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: add application.yml to directory
+        run: echo "${{ secrets.APPLICATION_YML }}" > application.yml
+
       - uses: docker/setup-buildx-action@v3
         with:
           driver-opts: image=moby/buildkit:latest
