@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ApiServerApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ApiServerApplication.class, args);
+		SpringApplication.ru(ApiServerApplication.class, args);
 	}
 
 }
