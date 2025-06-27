@@ -1,0 +1,11 @@
+# .github/CODEOWNERS
+
+* @KUmmIT-4/developers
+
+/.github/CODEOWNERS             @KUmmIT-4/backend @seungwoo1209
+
+/.github/workflows/*.yml        @KUmmIT-4/backend @seungwoo1209
+/.github/workflows/*.yaml       @KUmmIT-4/backend @seungwoo1209
+
+**/Dockerfile                   @KUmmIT-4/backend @seungwoo1209
+**/.dockerignore                @KUmmIT-4/backend @seungwoo1209
