@@ -3,7 +3,7 @@ WORKDIR /app
 COPY . .
 RUN gradle build
 
-FROM amazoncorretto:21-alpine-jre
+FROM amazoncorretto:21-jre-al2023
 WORKDIR /app
 COPY --from=builder /app/build/libs/*-SNAPSHOT.jar ./app.jar
 COPY --from=builder /app/application.yml ./
