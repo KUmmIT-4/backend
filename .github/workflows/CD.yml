@@ -54,8 +54,8 @@ jobs:
             set -e # 스크립트 실행중에 오류 발생시 바로 중단
             
             echo "Stopping existing container"
-            sudo docker stop sweetBalanceContainer
-            sudo docker rm sweetBalanceContainer
+            sudo docker stop kummit4
+            sudo docker rm kummit4
             
             sudo docker ps -a
             
