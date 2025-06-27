@@ -54,8 +54,8 @@ jobs:
             set -e # 스크립트 실행중에 오류 발생시 바로 중단
             
             echo "Stopping existing container"
-            sudo docker stop kummit4
-            sudo docker rm kummit4
+            sudo docker stop kummit4Container || true
+            sudo docker rm kummit4Container || true
             
             sudo docker ps -a
             
@@ -63,7 +63,7 @@ jobs:
             sudo docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}
             
             echo "Running new container"
-            sudo docker run -d -p 8000:8080 --name sweetBalanceContainer -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
+            sudo docker run -d -p 8000:8080 --name kummit4Container -v /etc/localtime:/etc/localtime:ro -e TZ=Asia/Seoul ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKER_IMAGE }}
             
             echo "Cleaning up old images"
             sudo docker image prune -f
