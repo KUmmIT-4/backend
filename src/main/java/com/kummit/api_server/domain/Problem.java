@@ -70,6 +70,12 @@ public class Problem {
     @Column(name = "output_example", nullable = false, columnDefinition = "TEXT")
     private String outputExample;
 
+    @Column(name = "rationale", nullable = false, columnDefinition = "TEXT")
+    private String rationale;
+
+    @Column(name = "quiz_text", nullable = false, columnDefinition = "TEXT")
+    private String quizText;
+
     /** 빈칸 뚫린 코드 스니펫 */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String code;
@@ -80,14 +86,6 @@ public class Problem {
 
     @Column(name = "answer_choice", nullable = false, length = 255)
     private String answerChoice;
-
-    /** 해설(JSON) */
-    @Column(name = "rationale", nullable = false, columnDefinition = "JSON")
-    private String rationale = "[]"; // NOT NULL DEFAULT '[]'
-
-    /** 퀴즈 지문 */
-    @Column(name = "quiz_text", nullable = false, length = 255)
-    private String quizText = "";    // NOT NULL DEFAULT ''
 
     /* ---------- 메타 ---------- */
 
@@ -105,6 +103,8 @@ public class Problem {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
 
     /* ---------- 연관 관계 ---------- */
 
@@ -130,10 +130,10 @@ public class Problem {
                    String code,
                    String choices,
                    String answerChoice,
-                   String rationale,
-                   String quizText,
                    ProblemTier problemTier,
-                   Byte problemLevel) {
+                   Byte problemLevel,
+                   String rationale,
+                   String quizText) {
 
         this.problemNum    = problemNum;
         this.title         = title;
@@ -145,9 +145,9 @@ public class Problem {
         this.code          = code;
         this.choices       = choices;
         this.answerChoice  = answerChoice;
-        this.rationale     = rationale != null ? rationale : "[]";
-        this.quizText      = quizText != null ? quizText : "";
         this.problemTier   = problemTier;
         this.problemLevel  = problemLevel;
+        this.rationale = rationale;
+        this.quizText = quizText;
     }
 }

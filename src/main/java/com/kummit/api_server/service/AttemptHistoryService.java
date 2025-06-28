@@ -1,4 +1,3 @@
-// src/main/java/com/kummit/api_server/service/AttemptHistoryService.java
 package com.kummit.api_server.service;
 import com.kummit.api_server.enums.Status;
 import com.kummit.api_server.dto.response.AttemptSubmitResponse;
@@ -44,13 +43,6 @@ public class AttemptHistoryService {
         // 그 외: 0점
         return 0;
     }
-
-    /** 내 풀이 기록 전체 조회 */
-    public AttemptListResponse listAll(Long userId) {
-        List<Attempt> attempts = historyRepo.findAllByUser_IdOrderByCreatedAtDesc(userId);
-        return new AttemptListResponse(toBriefs(attempts));
-    }
-
 
     public MyAttemptListResponse listAll(Long userId, int pageNo, int perPage) {
         Pageable pageable = PageRequest.of(pageNo - 1, perPage);
@@ -124,7 +116,7 @@ public class AttemptHistoryService {
             att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
             att.getAttemptLanguage(),
             att.getStatus().name().toLowerCase(),
-            tierLevel
+            tierLevel, p.getRationale(), p.getQuizText()
         );
     }
 
@@ -186,7 +178,4 @@ public class AttemptHistoryService {
         user.setDailyStreak(0);   
         // userRepo.save(user); // JPA dirty checking이 동작하므로 명시적으로 save하지 않아도 됨(권장)
     }
-
-    
-    
 }
