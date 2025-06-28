@@ -57,13 +57,13 @@ public class AttemptsController {
 
     String queryTemplate2 = """
         (역할)
-        당신은 Baekjoon 온라인 저지 문제의 C++ 해답 코드를 활용해, 코드의 일부를 빈칸으로 만드는 객관식 퀴즈를 JSON 형식으로 생성하는 시스템입니다.
+        당신은 Baekjoon 온라인 저지 문제의 {requestLanguage} 언어 해답 코드를 활용해, 코드의 일부를 빈칸으로 만드는 객관식 퀴즈를 JSON 형식으로 생성하는 시스템입니다.
 
         (문제 번호)
         {problemNumber}
 
         (목표)
-        주어진 문제 번호의 C++ 언어 정답 코드 중 하나를 찾아, 주석을 모두 제거하고 핵심 로직 중 한 줄 이내를 `__BLANK__`로 대체하세요.
+        주어진 문제 번호의 {requestLanguage} 언어 정답 코드 중 하나를 찾아, 주석을 모두 제거하고 핵심 로직 중 한 줄 이내를 `__BLANK__`로 대체하세요.
         그 후, 아래 JSON 스키마에 완벽히 맞춰서, 응답을 JSON 객체로만 출력하세요.
 
         (제약)
@@ -93,7 +93,8 @@ public class AttemptsController {
         String query1 = queryTemplate1
                 .replace("{problemNumber}", Integer.toString(problemNumber));
         String query2 = queryTemplate2
-                .replace("{problemNumber}", Integer.toString(problemNumber));
+                .replace("{problemNumber}", Integer.toString(problemNumber))
+                .replace("{requestLanguage}",req.language());
 
         List<String> prompts = List.of(query1,query2);
         List<String> answers = parallelChat(prompts);
@@ -109,7 +110,7 @@ public class AttemptsController {
         Map<String, Object> flatMergedMap = new LinkedHashMap<>(problemMap);
         flatMergedMap.putAll(quizMap);
         String flatMergedJson = objectMapper.writeValueAsString(flatMergedMap);
-        System.out.println("flatMergedJson = " + flatMergedJson);
+
 //        JsonNode node = objectMapper.readTree(cleanedAnswers.get(0));
 //        JsonNode node1 = objectMapper.readTree(cleanedAnswers.get(1));
 //        String title         = node.get("title").asText();
