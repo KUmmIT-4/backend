@@ -1,8 +1,10 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.kummit.api_server.enums.Status;
 
 import java.time.LocalDateTime;
 
@@ -12,6 +14,7 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "record")
+@Getter
 public class Record {
 
     /* ---------- PK ---------- */
@@ -71,17 +74,4 @@ public class Record {
         this.submittedAt  = submittedAt;
         this.userChoice   = userChoice;
     }
-
-    /* ---------- ENUM ---------- */
-    public enum Status { SOLVED, ATTEMPTING, ABANDONED }
-
-    /* ---------- Getter ---------- */
-    public Long            getId()          { return id; }
-    public User            getUser()        { return user; }
-    public Problem         getProblem()     { return problem; }
-    public Status          getStatus()      { return status; }
-    public LocalDateTime   getSubmittedAt() { return submittedAt; }
-    public Byte            getUserChoice()  { return userChoice; }
-    public LocalDateTime   getCreatedAt()   { return createdAt; }
-    public LocalDateTime   getUpdatedAt()   { return updatedAt; }
 }

@@ -1,8 +1,10 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.kummit.api_server.enums.ProblemTier;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,11 +17,12 @@ import java.util.List;
  */
 @Entity
 @Table(
-    name = "problem",
-    indexes = {
-        @Index(name = "idx_problem_num", columnList = "problem_num")
-    }
+        name = "problem",
+        indexes = {
+                @Index(name = "idx_problem_num", columnList = "problem_num")
+        }
 )
+@Getter
 public class Problem {
 
     /* ---------- PK ---------- */
@@ -32,7 +35,7 @@ public class Problem {
     /* ---------- FK : boj_problem_info.problem_num ---------- */
 
     /**
-     * BOJ 원본 문제 번호.  
+     * BOJ 원본 문제 번호.
      *  insertable/updatable = false → 값은 애플리케이션에서 세팅하지만
      *  JPA 가 FK 컬럼을 직접 변경하지는 않도록 함.
      */
@@ -41,7 +44,7 @@ public class Problem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_num", referencedColumnName = "problem_num",
-                insertable = false, updatable = false)
+            insertable = false, updatable = false)
     private BojProblemInfo meta;         // 조회용 (옵션)
 
     /* ---------- 본문 ---------- */
@@ -95,8 +98,8 @@ public class Problem {
     /* ---------- 연관 관계 ---------- */
 
     @OneToMany(mappedBy = "problem",
-               cascade = CascadeType.ALL,
-               orphanRemoval = true)
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
 
     /* ---------- 생성자 ---------- */
@@ -129,26 +132,4 @@ public class Problem {
         this.problemTier     = problemTier;
         this.problemLevel    = problemLevel;
     }
-
-    /* ---------- ENUM ---------- */
-    public enum ProblemTier { BRONZE, SILVER, GOLD }
-
-    /* ---------- Getter ---------- */
-    public Long             getId()            { return id; }
-    public Integer          getProblemNum()    { return problemNum; }
-    public String           getTitle()         { return title; }
-    public String           getExplanation()   { return explanation; }
-    public String           getInputFormat()   { return inputFormat; }
-    public String           getOutputFormat()  { return outputFormat; }
-    public String           getInputExample()  { return inputExample; }
-    public String           getOutputExample() { return outputExample; }
-    public String           getCode()          { return code; }
-    public String           getChoices()       { return choices; }
-    public String           getAnswerChoice()  { return answerChoice; }
-    public ProblemTier      getProblemTier()   { return problemTier; }
-    public Byte             getProblemLevel()  { return problemLevel; }
-    public LocalDateTime    getCreatedAt()     { return createdAt; }
-    public LocalDateTime    getUpdatedAt()     { return updatedAt; }
-    public List<Record>     getRecords()       { return records; }
-    public BojProblemInfo   getMeta()          { return meta; }
 }
