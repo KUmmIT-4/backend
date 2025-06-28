@@ -14,13 +14,13 @@ import java.util.concurrent.ThreadLocalRandom;
 @RequiredArgsConstructor
 public class GeminiController {
 
-    private final GeminiService geminiService;
-
-    // 문제 도전
-    /** POST /api/gemini  { "prompt": "..." } */
-    @PostMapping
-    public ResponseEntity<String> chat(@RequestBody PromptDto body) {
-
+//    private final GeminiService geminiService;
+//
+//    // 문제 도전
+//    /** POST /api/gemini  { "prompt": "..." } */
+//    @PostMapping
+//    public ResponseEntity<String> chat(@RequestBody PromptDto body) {
+//
 //        WebClient web = WebClient.builder()
 //                .baseUrl("https://solved.ac/api/v3").build();
 //        long start = System.nanoTime();
@@ -32,11 +32,11 @@ public class GeminiController {
 //        long end = System.nanoTime();
 //        System.out.println(end - start);
 //        System.out.println(list);
-
-        String answer = geminiService.ask(body.prompt());
-        return ResponseEntity.ok(answer);
-    }
-
-    /** 간단한 DTO (record 문법, Java 21+) */
-    public record PromptDto(String prompt) {}
+//
+//        String answer = geminiService.ask(body.prompt());
+//        return ResponseEntity.ok(answer);
+//    }
+//
+//    /** 간단한 DTO (record 문법, Java 21+) */
+//    public record PromptDto(String prompt) {}
 }
