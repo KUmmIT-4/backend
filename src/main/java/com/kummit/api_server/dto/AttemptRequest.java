@@ -8,5 +8,6 @@ import jakarta.validation.constraints.NotNull;
 /** 요청 예시: { "tier": "BRONZE", "level": 1 } */
 public record AttemptRequest(
         @NotNull ProblemTier tier,
-        @Min(1) @Max(5) byte level
+        @Min(1) @Max(5) byte level,
+        @NotNull String language
 ) {}

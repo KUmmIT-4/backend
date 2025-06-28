@@ -6,13 +6,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kummit.api_server.domain.Attempt;
+import com.kummit.api_server.dto.response.*;
 import com.kummit.api_server.dto.response.AttemptBrief;
-import com.kummit.api_server.dto.response.AttemptDetailResponse;
-import com.kummit.api_server.dto.response.AttemptListResponse;
 import com.kummit.api_server.repository.AttemptHistoryRepository;
 import com.kummit.api_server.repository.AttemptRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class AttemptHistoryService {
     private final AttemptHistoryRepository historyRepo;
     private final AttemptRepository        attemptRepo;
     private final ObjectMapper             objectMapper;
+
 
     private int calcScore(String tier, int level) {
         tier = tier.toUpperCase();
@@ -49,13 +52,24 @@ public class AttemptHistoryService {
         return new AttemptListResponse(toBriefs(attempts));
     }
 
-    /** 특정 날짜(YYYY-MM-DD) 조회 */
-    public AttemptListResponse listByDate(Long userId, LocalDate date) {
-        LocalDateTime start = date.atStartOfDay();
-        LocalDateTime end   = date.plusDays(1).atStartOfDay();
-        List<Attempt> attempts = historyRepo
-            .findAllByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, start, end);
-        return new AttemptListResponse(toBriefs(attempts));
+    public MyAttemptListResponse listAll(Long userId, int pageNo, int perPage) {
+        Pageable pageable = PageRequest.of(pageNo - 1, perPage);
+        Page<Attempt> page = historyRepo.findPageByUser_IdOrderByCreatedAtDesc(userId, pageable);
+
+        List<AttemptSummaryResponse> attempts = page.getContent().stream()
+                .map(a -> new AttemptSummaryResponse(
+                        a.getId(),
+                        a.getProblem().getId(),
+                        a.getProblem().getTitle(),
+                        a.getStatus().name().toLowerCase(),
+                        a.getAttemptLanguage().toString(),
+                        a.getProblem().getProblemTier().name(),
+                        a.getProblem().getProblemLevel()
+                ))
+                .toList();
+
+
+        return new MyAttemptListResponse(attempts, page.hasNext());
     }
 
     private List<AttemptBrief> toBriefs(List<Attempt> attempts) {
@@ -106,8 +120,9 @@ public class AttemptHistoryService {
             p.getExplanation(),
             p.getCode(),
             choices,
-            Integer.parseInt(p.getAnswerChoice()),                     // 0-based
+            p.getAnswerChoice(),
             att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
+            att.getAttemptLanguage(),
             att.getStatus().name().toLowerCase(),
             tierLevel
         );
