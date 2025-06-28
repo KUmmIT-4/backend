@@ -133,7 +133,7 @@ public class AttemptsController {
 //        System.out.println("code = " + code);
 //        System.out.println("choices = " + choicesList);
 //        System.out.println("answerChoice = " + answerChoice);
-         //return ResponseEntity.ok(answer);
+        //return ResponseEntity.ok(answer);
     }
 
     // 기존 parallelChat 예시
