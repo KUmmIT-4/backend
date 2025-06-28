@@ -94,6 +94,7 @@ public class UserService {
                         a.getProblem().getId(),
                         a.getProblem().getTitle(),
                         a.getStatus().name().toLowerCase(),
+                        a.getAttemptLanguage().toString(),
                         a.getProblem().getProblemTier().name(),
                         a.getProblem().getProblemLevel()
                 ))
