@@ -15,7 +15,7 @@ public class GeminiService {
 
     private final Client client;                // Geminiconfig에서 주입
     // "gemini-2.5-flash"
-    private static final String MODEL = "gemini-2.0-flash-lite"; // 자유롭게 변경
+    private static final String MODEL = "gemini-2.5-flash"; /*-lite";*/ // 자유롭게 변경
 
     @Async("geminiExecutor")
     public CompletableFuture<String> askAsync(String prompt) {
