@@ -12,7 +12,7 @@ import com.kummit.api_server.enums.ProblemTier;
  *    가벼운 조회 전용 엔티티로 설계
  */
 @Entity
-@Table(name = "boj_problem_info")
+@Table(name = "bojprobleminfo")
 @Getter
 public class BojProblemInfo {
 
@@ -33,7 +33,7 @@ public class BojProblemInfo {
     private Byte problemLevel;                // 1 ~ 5
 
     /** solved.ac 기준 해결자 수 (통계용) */
-    @Column(name = "solved_user_count", nullable = false)
+    @Column(name = "accept_user_count", nullable = false)
     private Integer solvedUserCount;
 
     /* ---------- 생성자 ---------- */
