@@ -98,7 +98,7 @@ public class AttemptHistoryService {
             p.getExplanation(),
             p.getCode(),
             choices,
-            Integer.parseInt(p.getAnswerChoice()),                     // 0-based
+            p.getAnswerChoice(),
             att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
             att.getAttemptLanguage(),
             att.getStatus().name().toLowerCase(),
