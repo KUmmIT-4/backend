@@ -7,12 +7,12 @@ plugins {
 group = 'com.kummit'
 version = '0.0.1-SNAPSHOT'
 
-// local JAVA_HOME 설정된 JDK를 그대로 사용하기 위해 toolchain 제거
-// java {
-//     toolchain {
-//         languageVersion = JavaLanguageVersion.of(21)
-//     }
-// }
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
 
 configurations {
     compileOnly {
@@ -21,32 +21,39 @@ configurations {
 }
 
 repositories {
+    google()
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
-    // Spring Web MVC (RestController, RequestMapping 등)
-    implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+  
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+  
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  
+  
+  // JPA & Hibernate
+  implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // JPA & Hibernate
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+  // MySQL Connector (올바른 coordinates)
+  implementation 'mysql:mysql-connector-java:8.0.33'
 
-    // MySQL Connector (올바른 coordinates)
-    implementation 'mysql:mysql-connector-java:8.0.33'
+  // Bean Validation (Jakarta Validation API)
+  implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Actuator (헬스체크·메트릭)
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	//	gemini dependency
+	implementation('com.google.genai:google-genai:1.6.0'){
+		exclude group: 'commons-logging', module: 'commons-logging'
+	}
 
-    // Bean Validation (Jakarta Validation API)
-    implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// webflux
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
-    // Lombok (빌드 시에만)
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
-
-    // Test
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
