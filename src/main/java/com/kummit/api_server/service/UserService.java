@@ -2,7 +2,7 @@ package com.kummit.api_server.service;
 
 import com.kummit.api_server.domain.Attempt;
 import com.kummit.api_server.dto.request.UserUpdateRequest;
-import com.kummit.api_server.dto.response.AttemptListResponse;
+import com.kummit.api_server.dto.response.TodayAttemptListResponse;
 import com.kummit.api_server.dto.response.AttemptSummaryResponse;
 import com.kummit.api_server.dto.response.LeaderboardListResponse;
 import com.kummit.api_server.dto.response.LeaderboardResponse;
@@ -20,7 +20,6 @@ import com.kummit.api_server.repository.AttemptRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -80,7 +79,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public AttemptListResponse getAttemptsByDate(Long userId, LocalDate date, int pageNo, int perPage) {
+    public TodayAttemptListResponse getAttemptsByDate(Long userId, LocalDate date, int pageNo, int perPage) {
         Pageable pageable = PageRequest.of(pageNo - 1, perPage);
         Page<Attempt> page = attemptRepository.findByUserIdAndCreatedAtBetween(
                 userId,
@@ -100,7 +99,7 @@ public class UserService {
                 ))
                 .toList();
 
-        return new AttemptListResponse(results, page.hasNext());
+        return new TodayAttemptListResponse(results, page.hasNext());
     }
 
     public LeaderboardListResponse getLeaderboard(int pageNo, int perPage) {

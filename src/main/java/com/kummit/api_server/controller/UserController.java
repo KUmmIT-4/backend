@@ -181,7 +181,7 @@ public class UserController {
         Long userId = sessionStore.getUserId(sessionId);
 
         try {
-            AttemptListResponse response = userService.getAttemptsByDate(
+            TodayAttemptListResponse response = userService.getAttemptsByDate(
                     userId,
                     date.toLocalDate(),  // 날짜만 사용
                     request.pageNo(),
