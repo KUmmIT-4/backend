@@ -1,20 +1,50 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 실제 문제의 전문(제목·설명·코드·선택지 등)을 저장하는 테이블.
+ * 문제 난이도(티어 / 레벨)·해결자 수 등
+ * 가벼운 메타 정보는 {@link BojProblemInfo} 가 담당한다.
+ */
 @Entity
-@Table(name = "problem")
+@Table(
+    name = "problem",
+    indexes = {
+        @Index(name = "idx_problem_num", columnList = "problem_num")
+    }
+)
 public class Problem {
+
+    /* ---------- PK ---------- */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "problem_id")
     private Long id;
 
-    @Column(name = "problem_num", nullable = false)
+    /* ---------- FK : boj_problem_info.problem_num ---------- */
+
+    /**
+     * BOJ 원본 문제 번호.  
+     *  insertable/updatable = false → 값은 애플리케이션에서 세팅하지만
+     *  JPA 가 FK 컬럼을 직접 변경하지는 않도록 함.
+     */
+    @Column(name = "problem_num", nullable = false, unique = true)
     private Integer problemNum;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "problem_num", referencedColumnName = "problem_num",
+                insertable = false, updatable = false)
+    private BojProblemInfo meta;         // 조회용 (옵션)
+
+    /* ---------- 본문 ---------- */
 
     @Column(name = "problem_title", nullable = false, length = 255)
     private String title;
@@ -34,32 +64,44 @@ public class Problem {
     @Column(name = "output_example", nullable = false, columnDefinition = "TEXT")
     private String outputExample;
 
+    /** 빈칸 뚫린 코드 스니펫 */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String code;
 
+    /** 보기를 JSON 문자열로 저장 */
     @Column(nullable = false, columnDefinition = "JSON")
     private String choices;
 
     @Column(name = "answer_choice", nullable = false, length = 255)
     private String answerChoice;
 
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    /* ---------- 메타 ---------- */
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "problem_tier", nullable = false)
-    private ProblemTier problemTier;
+    @Column(name = "problem_tier", nullable = false, length = 6)
+    private ProblemTier problemTier;     // BRONZE / SILVER / GOLD
 
     @Column(name = "problem_level", nullable = false)
-    private Byte problemLevel;
+    private Byte problemLevel;           // 1 ~ 5
 
-    @OneToMany(mappedBy = "problem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    /* ---------- 연관 관계 ---------- */
+
+    @OneToMany(mappedBy = "problem",
+               cascade = CascadeType.ALL,
+               orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
 
-    protected Problem() { }
+    /* ---------- 생성자 ---------- */
+
+    protected Problem() { } // JPA 기본 생성자
 
     public Problem(Integer problemNum,
                    String title,
@@ -73,90 +115,40 @@ public class Problem {
                    String answerChoice,
                    ProblemTier problemTier,
                    Byte problemLevel) {
-        this.problemNum = problemNum;
-        this.title = title;
-        this.explanation = explanation;
-        this.inputFormat = inputFormat;
-        this.outputFormat = outputFormat;
-        this.inputExample = inputExample;
-        this.outputExample = outputExample;
-        this.code = code;
-        this.choices = choices;
-        this.answerChoice = answerChoice;
-        this.problemTier = problemTier;
-        this.problemLevel = problemLevel;
+
+        this.problemNum      = problemNum;
+        this.title           = title;
+        this.explanation     = explanation;
+        this.inputFormat     = inputFormat;
+        this.outputFormat    = outputFormat;
+        this.inputExample    = inputExample;
+        this.outputExample   = outputExample;
+        this.code            = code;
+        this.choices         = choices;
+        this.answerChoice    = answerChoice;
+        this.problemTier     = problemTier;
+        this.problemLevel    = problemLevel;
     }
 
-    @PreUpdate
-    public void touchUpdated() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // --- enums ---
+    /* ---------- ENUM ---------- */
     public enum ProblemTier { BRONZE, SILVER, GOLD }
 
-    // --- getters ---
-    public Long getId() {
-        return id;
-    }
-
-    public Integer getProblemNum() {
-        return problemNum;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getExplanation() {
-        return explanation;
-    }
-
-    public String getInputFormat() {
-        return inputFormat;
-    }
-
-    public String getOutputFormat() {
-        return outputFormat;
-    }
-
-    public String getInputExample() {
-        return inputExample;
-    }
-
-    public String getOutputExample() {
-        return outputExample;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public String getChoices() {
-        return choices;
-    }
-
-    public String getAnswerChoice() {
-        return answerChoice;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public ProblemTier getProblemTier() {
-        return problemTier;
-    }
-
-    public Byte getProblemLevel() {
-        return problemLevel;
-    }
-
-    public List<Record> getRecords() {
-        return records;
-    }
+    /* ---------- Getter ---------- */
+    public Long             getId()            { return id; }
+    public Integer          getProblemNum()    { return problemNum; }
+    public String           getTitle()         { return title; }
+    public String           getExplanation()   { return explanation; }
+    public String           getInputFormat()   { return inputFormat; }
+    public String           getOutputFormat()  { return outputFormat; }
+    public String           getInputExample()  { return inputExample; }
+    public String           getOutputExample() { return outputExample; }
+    public String           getCode()          { return code; }
+    public String           getChoices()       { return choices; }
+    public String           getAnswerChoice()  { return answerChoice; }
+    public ProblemTier      getProblemTier()   { return problemTier; }
+    public Byte             getProblemLevel()  { return problemLevel; }
+    public LocalDateTime    getCreatedAt()     { return createdAt; }
+    public LocalDateTime    getUpdatedAt()     { return updatedAt; }
+    public List<Record>     getRecords()       { return records; }
+    public BojProblemInfo   getMeta()          { return meta; }
 }

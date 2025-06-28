@@ -1,91 +1,87 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.time.LocalDateTime;
 
+/**
+ * 한 사용자가 한 문제를 풀이(시도)한 단일 기록.
+ *  - 제출 시각 · 선택지(픽) · 채점 결과 등을 저장한다.
+ */
 @Entity
 @Table(name = "record")
 public class Record {
+
+    /* ---------- PK ---------- */
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "record_id")
     private Long id;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    /* ---------- FK ---------- */
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "problem_id", nullable = false)
     private Problem problem;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Status status;
+    /* ---------- 풀이 상태 ---------- */
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private Status status = Status.ATTEMPTING;
+
+    /** 실제 코드 제출 시각 (null : 아직 미제출) */
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
 
+    /** 사용자가 고른 정답 보기(0 ~ n) — null : 아직 선택 전 */
     @Column(name = "user_choice")
     private Byte userChoice;
 
+    /* ---------- 메타 ---------- */
+
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
 
-    protected Record() { }
+    /* ---------- 생성자 ---------- */
+
+    protected Record() { }         // JPA 기본 생성자
 
     public Record(User user,
                   Problem problem,
                   Status status,
                   LocalDateTime submittedAt,
                   Byte userChoice) {
-        this.user = user;
-        this.problem = problem;
-        this.status = status;
-        this.submittedAt = submittedAt;
-        this.userChoice = userChoice;
+
+        this.user         = user;
+        this.problem      = problem;
+        this.status       = status;
+        this.submittedAt  = submittedAt;
+        this.userChoice   = userChoice;
     }
 
-    @PreUpdate
-    public void touchUpdated() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    /* ---------- ENUM ---------- */
+    public enum Status { SOLVED, ATTEMPTING, ABANDONED }
 
-    public enum Status { solved, attempting, abandoned }
-
-    // --- getters ---
-    public Long getId() {
-        return id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public Problem getProblem() {
-        return problem;
-    }
-
-    public Status getStatus() {
-        return status;
-    }
-
-    public LocalDateTime getSubmittedAt() {
-        return submittedAt;
-    }
-
-    public Byte getUserChoice() {
-        return userChoice;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
+    /* ---------- Getter ---------- */
+    public Long            getId()          { return id; }
+    public User            getUser()        { return user; }
+    public Problem         getProblem()     { return problem; }
+    public Status          getStatus()      { return status; }
+    public LocalDateTime   getSubmittedAt() { return submittedAt; }
+    public Byte            getUserChoice()  { return userChoice; }
+    public LocalDateTime   getCreatedAt()   { return createdAt; }
+    public LocalDateTime   getUpdatedAt()   { return updatedAt; }
 }
