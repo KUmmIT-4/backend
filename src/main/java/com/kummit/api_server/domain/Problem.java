@@ -87,14 +87,6 @@ public class Problem {
     @Column(name = "answer_choice", nullable = false, length = 255)
     private String answerChoice;
 
-    /** 해설(JSON) */
-    @Column(name = "rationale", nullable = false, columnDefinition = "JSON")
-    private String rationale = "[]"; // NOT NULL DEFAULT '[]'
-
-    /** 퀴즈 지문 */
-    @Column(name = "quiz_text", nullable = false, length = 255)
-    private String quizText = "";    // NOT NULL DEFAULT ''
-
     /* ---------- 메타 ---------- */
 
     @Enumerated(EnumType.STRING)
@@ -138,8 +130,6 @@ public class Problem {
                    String code,
                    String choices,
                    String answerChoice,
-                   String rationale,
-                   String quizText,
                    ProblemTier problemTier,
                    Byte problemLevel,
                    String rationale,
@@ -155,8 +145,6 @@ public class Problem {
         this.code          = code;
         this.choices       = choices;
         this.answerChoice  = answerChoice;
-        this.rationale     = rationale != null ? rationale : "[]";
-        this.quizText      = quizText != null ? quizText : "";
         this.problemTier   = problemTier;
         this.problemLevel  = problemLevel;
         this.rationale = rationale;
