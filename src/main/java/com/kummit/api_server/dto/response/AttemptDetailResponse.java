@@ -34,7 +34,7 @@ public class AttemptDetailResponse {
     private List<String> choices;
 
     @Schema(description = "정답 인덱스 (0-based)")
-    private Integer answer;
+    private String answer;
 
     @Schema(description = "사용자 선택 인덱스 (0-based)")
     private Integer pick;
