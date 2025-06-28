@@ -1,0 +1,110 @@
+package com.kummit.api_server.controller;
+
+import com.kummit.api_server.SessionStore;
+import com.kummit.api_server.domain.User;
+import com.kummit.api_server.dto.request.UserLoginRequest;
+import com.kummit.api_server.dto.response.UserResponse;
+import com.kummit.api_server.enums.CodingTier;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import org.springframework.http.*;
+import org.springframework.web.bind.annotation.*;
+
+import com.kummit.api_server.dto.request.UserRegisterRequest;
+import com.kummit.api_server.dto.response.UserInfoResponse;
+import com.kummit.api_server.service.UserService;
+
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    private final UserService userService;
+    private final SessionStore sessionStore;
+
+    public UserController(UserService userService, SessionStore sessionStore) {
+        this.userService = userService;
+        this.sessionStore = sessionStore;
+    }
+
+    @PostMapping("/register") // 회원 가입
+    public ResponseEntity<UserResponse> registerUser(
+            @RequestBody @Valid UserRegisterRequest request) {
+
+        CodingTier codingTier = CodingTier.valueOf(request.tier().toUpperCase());
+        byte codingLevel = request.level();
+
+        // 회원 등록
+        User user = userService.register(
+                request.username(),
+                request.password(),
+                codingTier,
+                codingLevel,
+                request.language()
+        );
+
+        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername()));
+    }
+
+    @PostMapping("/login") // 로그인
+    public ResponseEntity<?> login(@RequestBody UserLoginRequest request,
+                                              HttpServletResponse response) {
+        try {
+            User user = userService.login(request.username(), request.password());
+
+            String sessionId = UUID.randomUUID().toString();
+            sessionStore.put(sessionId, user.getId());
+
+            ResponseCookie cookie = ResponseCookie.from("session_id", sessionId)
+                    .path("/")
+                    .httpOnly(true)
+                    .sameSite("Lax")
+                    .build();
+
+            response.addHeader("Set-Cookie", cookie.toString());
+
+            return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername()));
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(401).body(
+                    new Object() {
+                        public final String error = "아이디 또는 비밀번호가 올바르지 않습니다.";
+                    }
+            );
+        }
+    }
+
+    @PostMapping("/logout") // 로그아웃
+    public ResponseEntity<?> logout(@CookieValue(value = "session_id", required = false) String sessionId,
+                                    HttpServletResponse response) {
+
+        // 세션 저장소에서 제거
+        if (sessionId != null) {
+            sessionStore.remove(sessionId);
+        }
+
+        // 쿠키 만료 (브라우저에서 삭제되도록)
+        ResponseCookie expiredCookie = ResponseCookie.from("session_id", "")
+                .path("/")
+                .maxAge(0)         // 즉시 만료
+                .httpOnly(true)
+                .build();
+
+        response.addHeader("Set-Cookie", expiredCookie.toString());
+
+        return ResponseEntity.ok(
+                new Object() {
+                    public final String message = "Logged out successfully";
+                }
+        );
+    }
+
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserInfoResponse> getUser(
+        @PathVariable Long userId
+    ) {
+        return ResponseEntity.ok(userService.getUser(userId));
+    }
+}

@@ -1,10 +1,11 @@
 package com.kummit.api_server.domain;
 
+import com.kummit.api_server.enums.CodingTier;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.kummit.api_server.enums.CodingTier;
 import com.kummit.api_server.enums.PrimaryLanguage;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,9 +31,6 @@ public class User {
     @Column(nullable = false, length = 255)
     private String password;
 
-    @Column(nullable = false, unique = true, length = 255)
-    private String email;
-
     /* ---------- 실력/통계 ---------- */
     @Enumerated(EnumType.STRING)
     @Column(name = "coding_tier", nullable = false, length = 6)
@@ -56,10 +54,12 @@ public class User {
 
     /* ---------- 메타 ---------- */
     @CreationTimestamp
+    @Setter
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Setter
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -70,14 +70,13 @@ public class User {
     /* ---------- 생성자 ---------- */
     protected User() { }
 
-    public User(String username, String password, String email,
+    public User(String username, String password,
                 CodingTier codingTier, Byte codingLevel,
                 PrimaryLanguage primaryLanguage) {
 
         this.username         = username;
         this.password         = password;
-        this.email            = email;
-        this.codingTier       = codingTier;
+        this.codingTier = codingTier;
         this.codingLevel      = codingLevel;
         this.primaryLanguage  = primaryLanguage;
     }
