@@ -65,7 +65,7 @@ public class User {
 
     /* ---------- 연관 ---------- */
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Record> records = new ArrayList<>();
+    private List<Attempt> attempts = new ArrayList<>();
 
     /* ---------- 생성자 ---------- */
     protected User() { }

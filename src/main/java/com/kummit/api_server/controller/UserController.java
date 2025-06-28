@@ -29,23 +29,31 @@ public class UserController {
     }
 
     @PostMapping("/register") // 회원 가입
-    public ResponseEntity<UserResponse> registerUser(
-            @RequestBody @Valid UserRegisterRequest request) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid UserRegisterRequest request) {
+        try {
+            CodingTier codingTier = CodingTier.valueOf(request.tier().toUpperCase());
+            byte codingLevel = request.level();
 
-        CodingTier codingTier = CodingTier.valueOf(request.tier().toUpperCase());
-        byte codingLevel = request.level();
+            User user = userService.register( // 회원 등록
+                    request.username(),
+                    request.password(),
+                    codingTier,
+                    codingLevel,
+                    request.language()
+            );
 
-        // 회원 등록
-        User user = userService.register(
-                request.username(),
-                request.password(),
-                codingTier,
-                codingLevel,
-                request.language()
-        );
+            return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername()));
 
-        return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername()));
+        } catch (IllegalArgumentException e) {
+            // 중복 아이디 등의 예외 처리
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    new Object() {
+                        public final String error = e.getMessage();
+                    }
+            );
+        }
     }
+
 
     @PostMapping("/login") // 로그인
     public ResponseEntity<?> login(@RequestBody UserLoginRequest request,

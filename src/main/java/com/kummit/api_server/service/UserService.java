@@ -24,7 +24,10 @@ public class UserService {
                          CodingTier codingTier,
                          byte codingLevel,
                          PrimaryLanguage language) {
-        //Todo username 이미 존재하는지 확인 먼저 하기
+
+        userRepository.findByUsername(username).ifPresent(user -> {
+            throw new IllegalArgumentException("이미 존재하는 아이디입니다.");
+        });
 
         User user = new User(username, password, codingTier, codingLevel, language); // user 객체 생성
         user.setCreatedAt(LocalDateTime.now()); // 가입 시각 설정
