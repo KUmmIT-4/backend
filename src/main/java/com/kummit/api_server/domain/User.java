@@ -1,9 +1,12 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
+import com.kummit.api_server.enums.CodingTier;
+import com.kummit.api_server.enums.PrimaryLanguage;
+import com.kummit.api_server.enums.Status;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,6 +15,7 @@ import java.util.List;
 /** 플랫폼 회원(사용자) 엔티티 */
 @Entity
 @Table(name = "user")
+@Getter
 public class User {
 
     /* ---------- PK ---------- */
@@ -36,7 +40,7 @@ public class User {
     private CodingTier codingTier;
 
     @Column(name = "coding_level", nullable = false)
-    private Byte codingLevel;      // TINYINT(0 ~ 255)
+    private Byte codingLevel;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "primary_language", nullable = false, length = 12)
@@ -82,38 +86,4 @@ public class User {
         this.codingLevel      = codingLevel;
         this.primaryLanguage  = primaryLanguage;
     }
-
-    /* ---------- ENUM ---------- */
-
-    public enum CodingTier { BRONZE, SILVER, GOLD, EXPERT }
-
-    public enum PrimaryLanguage {
-        C("C"),
-        CPP("C++"),          // DB 값 "C++"
-        PYTHON("Python"),
-        JAVA("Java"),
-        JAVASCRIPT("JavaScript");
-
-        private final String dbValue;
-        PrimaryLanguage(String dbValue) { this.dbValue = dbValue; }
-        @Override public String toString() { return dbValue; }   // Enum → DB 문자열
-    }
-
-    public enum Status { ACTIVE, DELETED, SUSPENDED }
-
-    /* ---------- Getter ---------- */
-    public Long             getId()                { return id; }
-    public String           getUsername()          { return username; }
-    public String           getPassword()          { return password; }
-    public String           getEmail()             { return email; }
-    public CodingTier       getCodingTier()        { return codingTier; }
-    public Byte             getCodingLevel()       { return codingLevel; }
-    public PrimaryLanguage  getPrimaryLanguage()   { return primaryLanguage; }
-    public Status           getStatus()            { return status; }
-    public Integer          getRating()            { return rating; }
-    public Integer          getDailyStreak()       { return dailyStreak; }
-    public LocalDate        getLastChallengeDate() { return lastChallengeDate; }
-    public LocalDateTime    getCreatedAt()         { return createdAt; }
-    public LocalDateTime    getUpdatedAt()         { return updatedAt; }
-    public List<Record>     getRecords()           { return records; }
 }

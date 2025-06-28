@@ -3,13 +3,11 @@ package com.kummit.api_server.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.kummit.api_server.domain.User;
-import com.kummit.api_server.domain.User.CodingTier;
-import com.kummit.api_server.domain.User.PrimaryLanguage;
+import com.kummit.api_server.enums.CodingTier;
+import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.dto.UserRegisterRequest;
 import com.kummit.api_server.dto.UserInfoResponse;
 import com.kummit.api_server.repository.UserRepository;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Service
 public class UserService {
