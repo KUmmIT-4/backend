@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.kummit.api_server.domain.BojProblemInfo;
-import com.kummit.api_server.dto.AttemptRequest;
-import com.kummit.api_server.dto.ProblemDetailDto;
+import com.kummit.api_server.dto.*;
 import com.kummit.api_server.service.GeminiService;
 import com.kummit.api_server.service.ProblemService;
 import jakarta.validation.Valid;
@@ -104,24 +103,52 @@ public class AttemptsController {
     /** POST /api/attempts */
     /* 시간 남으면 비동기로 할지 생각해보자 */
     @PostMapping
-    public void /*ResponseEntity<String>*/ attempt (@Valid @RequestBody AttemptRequest req) throws Exception{
+    public ProblemResponseDto attempt (@Valid @RequestBody AttemptRequest req) throws Exception{
 //        System.out.println(req.tier());
         // 클라이언트가 요청한 티어와 레벨 (ex: 골드 4)
         BojProblemInfo bojProblemInfo = problemService.pickProblem(req.tier(), req.level());
 
         int problemNumber = bojProblemInfo.getProblemNum();
+        System.out.println("problemNumber = " + problemNumber);
         String query1 = queryTemplate1
-                .replace("{problemNumber}", Integer.toString(problemNumber));
+                .replace("{problem_id}", Integer.toString(problemNumber));
         String query2 = queryTemplate2
-                .replace("{problemNumber}", Integer.toString(problemNumber))
-                .replace("{requestLanguage}",req.language());
+                .replace("{problem_id}", Integer.toString(problemNumber))
+                .replace("{language}",req.language());
 
         List<String> prompts = List.of(query1,query2);
+
+        prompts.forEach(System.out::println);
         List<String> answers = parallelChat(prompts);
         List<String> cleanedAnswers = answers.stream()
                 .map(s -> stripJsonCodeFence(s)) // 메소드 참조(Method Reference)로 더 간결하게 표현 가능
                 .collect(Collectors.toList());
         cleanedAnswers.forEach(System.out::println);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        FirstStringParseDto problemDetail = objectMapper.readValue(cleanedAnswers.get(0), FirstStringParseDto.class);
+        List<SecondStringParseDto> quizzes = objectMapper.readValue(cleanedAnswers.get(1), new TypeReference<List<SecondStringParseDto>>() {});
+
+        if (quizzes == null || quizzes.isEmpty()) {
+            throw new IllegalStateException("Quiz data is missing.");
+        }
+        SecondStringParseDto targetQuiz = quizzes.get(0);
+
+        ProblemResponseDto responseBody = new ProblemResponseDto(
+                (long) problemNumber,
+                req.tier().getDisplayName(),
+                String.valueOf(req.level()),
+                req.language(),
+                problemDetail.problemTitle(),            // s1에서 추출
+                problemDetail.problemExplanation(),      // s1에서 추출
+                targetQuiz.quizText(),                   // s2[0]에서 추출
+                targetQuiz.code(),                       // s2[0]에서 추출
+                targetQuiz.choices(),                    // s2[0]에서 추출
+                targetQuiz.answerChoice(),               // s2[0]에서 추출
+                targetQuiz.rationale()                   // s2[0]에서 추출
+        );
+
+        return responseBody;
 //        ObjectMapper objectMapper = new ObjectMapper();
 //        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
 //        TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<>() {};
