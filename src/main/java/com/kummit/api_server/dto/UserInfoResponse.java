@@ -12,7 +12,6 @@ public class UserInfoResponse {
     private String username;
     private String codingTier;
     private String primaryLanguage;
-    private String status;
     private Integer rating;
     private Integer dailyStreak;
     private LocalDate lastChallengeDate;
@@ -23,7 +22,6 @@ public class UserInfoResponse {
                             String username,
                             String codingTier,
                             String primaryLanguage,
-                            String status,
                             Integer rating,
                             Integer dailyStreak,
                             LocalDate lastChallengeDate,
@@ -33,7 +31,6 @@ public class UserInfoResponse {
         this.username = username;
         this.codingTier = codingTier;
         this.primaryLanguage = primaryLanguage;
-        this.status = status;
         this.rating = rating;
         this.dailyStreak = dailyStreak;
         this.lastChallengeDate = lastChallengeDate;
@@ -55,10 +52,6 @@ public class UserInfoResponse {
 
     public String getPrimaryLanguage() {
         return primaryLanguage;
-    }
-
-    public String getStatus() {
-        return status;
     }
 
     public Integer getRating() {

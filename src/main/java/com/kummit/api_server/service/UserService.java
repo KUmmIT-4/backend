@@ -45,7 +45,6 @@ public class UserService {
             user.getUsername(),
             user.getCodingTier().name(),
             user.getPrimaryLanguage().name(),
-            user.getStatus().name(),
             user.getRating(),
             user.getDailyStreak(),
             user.getLastChallengeDate(),

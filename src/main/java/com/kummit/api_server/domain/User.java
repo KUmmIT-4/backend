@@ -6,7 +6,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import com.kummit.api_server.enums.CodingTier;
 import com.kummit.api_server.enums.PrimaryLanguage;
-import com.kummit.api_server.enums.Status;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -45,10 +44,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(name = "primary_language", nullable = false, length = 12)
     private PrimaryLanguage primaryLanguage;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 9)
-    private Status status = Status.ACTIVE;
 
     @Column(nullable = false)
     private Integer rating = 0;
