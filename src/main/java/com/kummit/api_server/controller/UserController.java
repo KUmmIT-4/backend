@@ -5,7 +5,9 @@ import com.kummit.api_server.domain.User;
 import com.kummit.api_server.dto.request.UserLoginRequest;
 import com.kummit.api_server.dto.response.UserResponse;
 import com.kummit.api_server.enums.CodingTier;
+import com.kummit.api_server.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -22,10 +24,12 @@ public class UserController {
 
     private final UserService userService;
     private final SessionStore sessionStore;
+    private final UserRepository userRepository;
 
-    public UserController(UserService userService, SessionStore sessionStore) {
+    public UserController(UserService userService, SessionStore sessionStore, UserRepository userRepository) {
         this.userService = userService;
         this.sessionStore = sessionStore;
+        this.userRepository = userRepository;
     }
 
     @PostMapping("/register") // 회원 가입
@@ -53,7 +57,6 @@ public class UserController {
             );
         }
     }
-
 
     @PostMapping("/login") // 로그인
     public ResponseEntity<?> login(@RequestBody UserLoginRequest request,
@@ -108,11 +111,29 @@ public class UserController {
         );
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserInfo(@CookieValue(value = "session_id", required = false) String sessionId) {
+        if (sessionId == null || !sessionStore.exists(sessionId)) {
+            return ResponseEntity.status(401).body("쿠키에 사용자 정보가 없습니다.");
+        }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserInfoResponse> getUser(
-        @PathVariable Long userId
-    ) {
-        return ResponseEntity.ok(userService.getUser(userId));
+        Long userId = sessionStore.getUserId(sessionId);
+        User user = userService.getUser(userId);
+
+        if (user == null) {
+            return ResponseEntity.status(404).body("사용자를 찾을 수 없습니다.");
+        }
+
+        UserInfoResponse response = new UserInfoResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getCodingTier().name(),
+                user.getCodingLevel(),
+                user.getPrimaryLanguage().name(),
+                user.getRating(),
+                user.getDailyStreak()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
