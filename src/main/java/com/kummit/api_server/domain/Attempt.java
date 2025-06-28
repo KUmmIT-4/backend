@@ -14,14 +14,14 @@ import java.time.LocalDateTime;
  */
 @Getter
 @Entity
-@Table(name = "attempt")              // DB 테이블명: attempt  (기존 record 를 그대로 쓰려면 "record")
+@Table(name = "record")              // DB 테이블명: attempt  (기존 record 를 그대로 쓰려면 "record")
 public class Attempt {
 
     /* ---------- PK ---------- */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "attempt_id")      // 컬럼명: attempt_id (바꾸기 싫으면 record_id 유지 가능)
+    @Column(name = "record_id")      // 컬럼명: attempt_id (바꾸기 싫으면 record_id 유지 가능)
     private Long id;
 
     /* ---------- FK ---------- */

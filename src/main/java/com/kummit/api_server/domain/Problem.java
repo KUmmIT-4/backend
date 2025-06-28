@@ -1,10 +1,10 @@
 package com.kummit.api_server.domain;
 
+import com.kummit.api_server.enums.ProblemTier;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.kummit.api_server.enums.ProblemTier;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,9 +18,7 @@ import java.util.List;
 @Entity
 @Table(
         name = "problem",
-        indexes = {
-                @Index(name = "idx_problem_num", columnList = "problem_num")
-        }
+        indexes = { @Index(name = "idx_problem_num", columnList = "problem_num") }
 )
 @Getter
 public class Problem {
@@ -35,17 +33,21 @@ public class Problem {
     /* ---------- FK : boj_problem_info.problem_num ---------- */
 
     /**
-     * BOJ 원본 문제 번호.
-     *  insertable/updatable = false → 값은 애플리케이션에서 세팅하지만
-     *  JPA 가 FK 컬럼을 직접 변경하지는 않도록 함.
+     * BOJ 원본 문제 번호.  
+     * insertable/updatable = false → 값은 애플리케이션에서 세팅하지만
+     * JPA 가 FK 컬럼을 직접 변경하지는 않도록 함.
      */
     @Column(name = "problem_num", nullable = false, unique = true)
     private Integer problemNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "problem_num", referencedColumnName = "problem_num",
-            insertable = false, updatable = false)
-    private BojProblemInfo meta;         // 조회용 (옵션)
+    @JoinColumn(
+            name = "problem_num",
+            referencedColumnName = "problem_num",
+            insertable = false,
+            updatable   = false
+    )
+    private BojProblemInfo meta;   // (옵션) 가벼운 메타 정보
 
     /* ---------- 본문 ---------- */
 
@@ -55,13 +57,13 @@ public class Problem {
     @Column(name = "problem_explanation", nullable = false, columnDefinition = "TEXT")
     private String explanation;
 
-    @Column(name = "input_format", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "input_format",  nullable = false, columnDefinition = "TEXT")
     private String inputFormat;
 
     @Column(name = "output_format", nullable = false, columnDefinition = "TEXT")
     private String outputFormat;
 
-    @Column(name = "input_example", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "input_example",  nullable = false, columnDefinition = "TEXT")
     private String inputExample;
 
     @Column(name = "output_example", nullable = false, columnDefinition = "TEXT")
@@ -97,10 +99,12 @@ public class Problem {
 
     /* ---------- 연관 관계 ---------- */
 
-    @OneToMany(mappedBy = "problem",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true)
-    private List<Record> records = new ArrayList<>();
+    @OneToMany(
+            mappedBy     = "problem",
+            cascade      = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<Attempt> attempts = new ArrayList<>();
 
     /* ---------- 생성자 ---------- */
 
@@ -119,17 +123,17 @@ public class Problem {
                    ProblemTier problemTier,
                    Byte problemLevel) {
 
-        this.problemNum      = problemNum;
-        this.title           = title;
-        this.explanation     = explanation;
-        this.inputFormat     = inputFormat;
-        this.outputFormat    = outputFormat;
-        this.inputExample    = inputExample;
-        this.outputExample   = outputExample;
-        this.code            = code;
-        this.choices         = choices;
-        this.answerChoice    = answerChoice;
-        this.problemTier     = problemTier;
-        this.problemLevel    = problemLevel;
+        this.problemNum    = problemNum;
+        this.title         = title;
+        this.explanation   = explanation;
+        this.inputFormat   = inputFormat;
+        this.outputFormat  = outputFormat;
+        this.inputExample  = inputExample;
+        this.outputExample = outputExample;
+        this.code          = code;
+        this.choices       = choices;
+        this.answerChoice  = answerChoice;
+        this.problemTier   = problemTier;
+        this.problemLevel  = problemLevel;
     }
 }
