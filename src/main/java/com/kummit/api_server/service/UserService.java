@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.kummit.api_server.domain.User;
 import com.kummit.api_server.enums.CodingTier;
-import com.kummit.api_server.dto.response.UserInfoResponse;
 import com.kummit.api_server.repository.UserRepository;
 
 import java.time.LocalDateTime;
@@ -48,7 +47,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
         return userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
     }
 }
