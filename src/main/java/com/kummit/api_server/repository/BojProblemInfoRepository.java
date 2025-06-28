@@ -18,7 +18,7 @@ public interface BojProblemInfoRepository
         SELECT * FROM   (
                 SELECT *
                 FROM   bojprobleminfo
-                WHERE  problem_tier = 'Gold'
+                WHERE  problem_tier = :tier
                   AND  problem_level = :lv
                 ORDER  BY RAND()
                 LIMIT  20
@@ -27,6 +27,6 @@ public interface BojProblemInfoRepository
         LIMIT  1
         """,nativeQuery = true)
     Optional<BojProblemInfo> pickRandom(
-            @Param("tier") ProblemTier tier,
+            @Param("tier") String tier,
             @Param("lv") byte lv);
 }
