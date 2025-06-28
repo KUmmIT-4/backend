@@ -153,7 +153,7 @@ public class AttemptHistoryService {
         }
 
         attempt.setUserChoice((byte) pick);
-        attempt.setStatusFromString(status);
+        attempt.setStatus(Status.SOLVED);
         attempt.setSubmittedAt(java.time.LocalDateTime.now());
 
         return new AttemptSubmitResponse(

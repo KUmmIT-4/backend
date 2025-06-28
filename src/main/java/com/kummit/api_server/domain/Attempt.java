@@ -5,6 +5,7 @@ import com.kummit.api_server.enums.Status;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
  *  - 제출 시각 · 선택지 · 채점 결과 등을 저장한다.
  */
 @Getter
+@Setter
 @Entity
 @Table(name = "record")              // DB 테이블명: attempt  (기존 record 를 그대로 쓰려면 "record")
 public class Attempt {
