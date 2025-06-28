@@ -2,22 +2,23 @@ package com.kummit.api_server.controller;
 
 import com.kummit.api_server.SessionStore;
 import com.kummit.api_server.domain.User;
+import com.kummit.api_server.dto.request.AttemptQueryRequest;
 import com.kummit.api_server.dto.request.UserLoginRequest;
 import com.kummit.api_server.dto.request.UserUpdateRequest;
-import com.kummit.api_server.dto.response.UserResponse;
-import com.kummit.api_server.dto.response.UserUpdateResponse;
+import com.kummit.api_server.dto.response.*;
 import com.kummit.api_server.enums.CodingTier;
 import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
 import com.kummit.api_server.dto.request.UserRegisterRequest;
-import com.kummit.api_server.dto.response.UserInfoResponse;
 import com.kummit.api_server.service.UserService;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @RestController
@@ -165,5 +166,38 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(404).body(e.getMessage());
         }
+    }
+
+    @PostMapping("/attempts/me")
+    public ResponseEntity<?> getAttemptsByDate(
+            @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date,
+            @RequestBody AttemptQueryRequest request,
+            @CookieValue(value = "session_id", required = false) String sessionId
+    ) {
+        if (sessionId == null || !sessionStore.exists(sessionId)) {
+            return ResponseEntity.status(401).body("쿠키에 사용자 정보가 없습니다.");
+        }
+
+        Long userId = sessionStore.getUserId(sessionId);
+
+        try {
+            TodayAttemptListResponse response = userService.getAttemptsByDate(
+                    userId,
+                    date.toLocalDate(),  // 날짜만 사용
+                    request.pageNo(),
+                    request.perPage()
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("날짜 형식이 잘못되었습니다. (예: 2025-06-28T00:00:00)");
+        }
+    }
+
+    @PostMapping("/leaderboard")
+    public ResponseEntity<?> getLeaderboard(@RequestBody AttemptQueryRequest request) {
+        LeaderboardListResponse response = userService.getLeaderboard(request.pageNo(), request.perPage());
+        return ResponseEntity.ok(response);
     }
 }
