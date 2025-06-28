@@ -5,9 +5,9 @@ import com.kummit.api_server.domain.User;
 import com.kummit.api_server.dto.request.UserLoginRequest;
 import com.kummit.api_server.dto.response.UserResponse;
 import com.kummit.api_server.enums.CodingTier;
+import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.repository.UserRepository;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -37,13 +37,14 @@ public class UserController {
         try {
             CodingTier codingTier = CodingTier.valueOf(request.tier().toUpperCase());
             byte codingLevel = request.level();
+            PrimaryLanguage language = PrimaryLanguage.valueOf(request.language().toUpperCase());
 
             User user = userService.register( // 회원 등록
                     request.username(),
                     request.password(),
                     codingTier,
                     codingLevel,
-                    request.language()
+                    language
             );
 
             return ResponseEntity.ok(new UserResponse(user.getId(), user.getUsername()));
@@ -60,7 +61,7 @@ public class UserController {
 
     @PostMapping("/login") // 로그인
     public ResponseEntity<?> login(@RequestBody UserLoginRequest request,
-                                              HttpServletResponse response) {
+                                   HttpServletResponse response) {
         try {
             User user = userService.login(request.username(), request.password());
 
