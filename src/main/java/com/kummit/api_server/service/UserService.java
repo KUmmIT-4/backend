@@ -46,20 +46,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserInfoResponse getUser(Long id) {
-        User user = userRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+    public User getUser(Long userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-        return new UserInfoResponse(
-            user.getId(),
-            user.getUsername(),
-            user.getCodingTier().name(),
-            user.getPrimaryLanguage().name(),
-            user.getRating(),
-            user.getDailyStreak(),
-            user.getLastChallengeDate(),
-            user.getCreatedAt(),
-            user.getUpdatedAt()
-        );
     }
 }
