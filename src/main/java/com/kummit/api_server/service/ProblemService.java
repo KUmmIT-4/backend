@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 public class ProblemService {
 
     private final BojProblemInfoRepository repository;
-    private final BaekjoonClient client
+    private final BaekjoonClient client;
 
     public ProblemDetailDto pickProblemAndFetchDetail(
             ProblemTier tier, byte level) {
