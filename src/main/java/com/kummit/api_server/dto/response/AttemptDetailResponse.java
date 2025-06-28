@@ -47,4 +47,10 @@ public class AttemptDetailResponse {
 
     @Schema(description = "티어+레벨 (예: B5)")
     private String level;
+
+    @Schema(description = "정답 해설")
+    private String rationale;
+
+    @Schema(description = "퀴즈 텍스트")
+    private String quizText;
 }

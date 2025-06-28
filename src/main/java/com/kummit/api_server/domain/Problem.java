@@ -69,6 +69,12 @@ public class Problem {
     @Column(name = "output_example", nullable = false, columnDefinition = "TEXT")
     private String outputExample;
 
+    @Column(name = "rationale", nullable = false, columnDefinition = "TEXT")
+    private String rationale;
+
+    @Column(name = "quiz_text", nullable = false, columnDefinition = "TEXT")
+    private String quizText;
+
     /** 빈칸 뚫린 코드 스니펫 */
     @Column(nullable = false, columnDefinition = "TEXT")
     private String code;
@@ -97,6 +103,8 @@ public class Problem {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+
+
     /* ---------- 연관 관계 ---------- */
 
     @OneToMany(
@@ -121,7 +129,9 @@ public class Problem {
                    String choices,
                    String answerChoice,
                    ProblemTier problemTier,
-                   Byte problemLevel) {
+                   Byte problemLevel,
+                   String rationale,
+                   String quizText) {
 
         this.problemNum    = problemNum;
         this.title         = title;
@@ -135,5 +145,7 @@ public class Problem {
         this.answerChoice  = answerChoice;
         this.problemTier   = problemTier;
         this.problemLevel  = problemLevel;
+        this.rationale = rationale;
+        this.quizText = quizText;
     }
 }

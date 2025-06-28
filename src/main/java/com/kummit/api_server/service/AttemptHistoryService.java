@@ -102,7 +102,7 @@ public class AttemptHistoryService {
             att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
             att.getAttemptLanguage(),
             att.getStatus().name().toLowerCase(),
-            tierLevel
+            tierLevel, p.getRationale(), p.getQuizText()
         );
     }
 }
