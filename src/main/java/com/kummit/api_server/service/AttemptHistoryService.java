@@ -54,42 +54,42 @@ public class AttemptHistoryService {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end   = date.plusDays(1).atStartOfDay();
         List<Attempt> attempts = historyRepo
-            .findAllByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, start, end);
+                .findAllByUser_IdAndCreatedAtBetweenOrderByCreatedAtDesc(userId, start, end);
         return new AttemptListResponse(toBriefs(attempts));
     }
 
     private List<AttemptBrief> toBriefs(List<Attempt> attempts) {
         return attempts.stream()
-            .map(att -> {
-                // char + int 이 아닌, String으로 변환한 뒤 이어붙이기
-                String tierLevel = String.valueOf(
-                    att.getProblem().getProblemTier().name().charAt(0)
-                ) + att.getProblem().getProblemLevel();
+                .map(att -> {
+                    // char + int 이 아닌, String으로 변환한 뒤 이어붙이기
+                    String tierLevel = String.valueOf(
+                            att.getProblem().getProblemTier().name().charAt(0)
+                    ) + att.getProblem().getProblemLevel();
 
-                return new AttemptBrief(
-                    att.getId(),
-                    att.getProblem().getId(),
-                    att.getProblem().getTitle(),
-                    att.getStatus().name().toLowerCase(),
-                    tierLevel
-                );
-            })
-            .collect(Collectors.toList());
+                    return new AttemptBrief(
+                            att.getId(),
+                            att.getProblem().getId(),
+                            att.getProblem().getTitle(),
+                            att.getStatus().name().toLowerCase(),
+                            tierLevel
+                    );
+                })
+                .collect(Collectors.toList());
     }
 
     /** 단일 풀이 기록 상세 조회 */
     public AttemptDetailResponse getDetail(Long userId, Long attemptId) {
         Attempt att = attemptRepo
-            .findByIdAndUser_Id(attemptId, userId)
-            .orElseThrow(() -> new EntityNotFoundException("해당 풀이 기록을 찾을 수 없습니다."));
+                .findByIdAndUser_Id(attemptId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 풀이 기록을 찾을 수 없습니다."));
 
         var p = att.getProblem();
 
         List<String> choices;
         try {
             choices = objectMapper.readValue(
-                p.getChoices(),
-                new TypeReference<List<String>>() {}
+                    p.getChoices(),
+                    new TypeReference<List<String>>() {}
             );
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("문제 보기를 파싱할 수 없습니다.", e);
@@ -97,26 +97,26 @@ public class AttemptHistoryService {
 
         // String으로 변환 후 레벨 붙이기
         String tierLevel = String.valueOf(p.getProblemTier().name().charAt(0))
-                         + p.getProblemLevel();
+                + p.getProblemLevel();
 
         return new AttemptDetailResponse(
-            att.getId(),
-            p.getId(),
-            p.getTitle(),
-            p.getExplanation(),
-            p.getCode(),
-            choices,
-            Integer.parseInt(p.getAnswerChoice()),                     // 0-based
-            att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
-            att.getStatus().name().toLowerCase(),
-            tierLevel
+                att.getId(),
+                p.getId(),
+                p.getTitle(),
+                p.getExplanation(),
+                p.getCode(),
+                choices,
+                Integer.parseInt(p.getAnswerChoice()),                     // 0-based
+                att.getUserChoice() != null ? att.getUserChoice().intValue() : null,
+                att.getStatus().name().toLowerCase(),
+                tierLevel
         );
     }
 
     /**
      * 답안 제출 및 채점 처리
      */
-   @Transactional
+    @Transactional
     public AttemptSubmitResponse submitAttempt(Long userId, Long attemptId, int pick) {
         Attempt attempt = attemptRepo.findByIdAndUser_Id(attemptId, userId)
                 .orElseThrow(() -> new EntityNotFoundException("Attempt ID " + attemptId + "를 찾을 수 없습니다."));
@@ -142,10 +142,10 @@ public class AttemptHistoryService {
         attempt.setSubmittedAt(java.time.LocalDateTime.now());
 
         return new AttemptSubmitResponse(
-            attempt.getId(),
-            status.toLowerCase(),
-            score,
-            attempt.getSubmittedAt() != null ? attempt.getSubmittedAt().toString() : null  // 여기!
+                attempt.getId(),
+                status.toLowerCase(),
+                score,
+                attempt.getSubmittedAt() != null ? attempt.getSubmittedAt().toString() : null  // 여기!
         );
 
     }
@@ -153,8 +153,8 @@ public class AttemptHistoryService {
     @Transactional
     public void abandonAttempt(Long userId, Long attemptId) {
         Attempt attempt = attemptRepo
-            .findByIdAndUser_Id(attemptId, userId)
-            .orElseThrow(() -> new EntityNotFoundException("Attempt ID " + attemptId + "를 찾을 수 없습니다."));
+                .findByIdAndUser_Id(attemptId, userId)
+                .orElseThrow(() -> new EntityNotFoundException("Attempt ID " + attemptId + "를 찾을 수 없습니다."));
 
         if (attempt.getStatus() == Status.SOLVED || attempt.getStatus() == Status.ABANDONED) {
             throw new IllegalStateException("이미 완료된 또는 포기된 시도입니다.");
@@ -167,10 +167,10 @@ public class AttemptHistoryService {
 
         // 2. streak(연속 도전 일수) 0으로 리셋
         User user = attempt.getUser();
-        user.setDailyStreak(0);   
+        user.setDailyStreak(0);
         // userRepo.save(user); // JPA dirty checking이 동작하므로 명시적으로 save하지 않아도 됨(권장)
     }
 
-    
-    
+
+
 }

@@ -2,6 +2,7 @@
 package com.kummit.api_server.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.kummit.api_server.enums.PrimaryLanguage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -37,6 +38,9 @@ public class AttemptDetailResponse {
 
     @Schema(description = "사용자 선택 인덱스 (0-based)")
     private Integer pick;
+
+    @Schema(description = "시도 언어")
+    private PrimaryLanguage attemptLanguage;
 
     @Schema(description = "상태 (completed, progress, abandoned 등)")
     private String status;
