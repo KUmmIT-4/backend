@@ -4,9 +4,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.kummit.api_server.SessionStore;
+import com.kummit.api_server.domain.Attempt;
 import com.kummit.api_server.domain.BojProblemInfo;
-import com.kummit.api_server.dto.AttemptRequest;
-import com.kummit.api_server.dto.ProblemDetailDto;
+import com.kummit.api_server.domain.Problem;
+import com.kummit.api_server.dto.*;
+import com.kummit.api_server.enums.PrimaryLanguage;
+import com.kummit.api_server.enums.ProblemTier;
+import com.kummit.api_server.enums.Status;
+import com.kummit.api_server.repository.AttemptRepository;
+import com.kummit.api_server.repository.ProblemRepository;
+import com.kummit.api_server.repository.UserRepository;
 import com.kummit.api_server.service.GeminiService;
 import com.kummit.api_server.service.ProblemService;
 import jakarta.validation.Valid;
@@ -31,38 +39,43 @@ public class AttemptsController {
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper;
 
+    private final SessionStore sessionStore;
+
+    final UserRepository userRepository;
+    final ProblemRepository problemRepository;
+    final AttemptRepository attemptRepository;
+
+
     String queryTemplate1 = """
 (역할)
-당신은 Baekjoon 온라인 사이트에서 문제 번호를 활용해 문제 정보를 추출하여 JSON 객체로만 반환하는 시스템입니다.
-
-(사이트 링크)
-{https://www.acmicpc.net/}
+당신은 Baekjoon 사이트(www.acmicpc.net) 문제 번호를 기반으로 정보를 추출해 **JSON 객체만** 반환하는 시스템입니다.
 
 (문제 번호)
 {problem_id}
 
 (목표)
-아래 JSON 스키마에 완벽히 맞춰서, 응답을 JSON 객체로 출력하세요.
+아래 JSON 스키마에 맞춰 문제 정보를 추출하여 출력하세요.
 
 (제약)
-- 문제는 {https://www.acmicpc.net/} 에서 크롤링 해오세요.
-- 추가적인 설명을 포함해서는 안 됩니다.
-- Latex 문법을 사용하면 안 되고, 유니코드 수식을 사용합니다.
-
+- 문제는 인터넷에서 찾으세요
+- 응답은 JSON 객체만 출력하세요. **추가 설명 금지.**
+- Latex 문법 사용 금지. 수식은 **유니코드**로 작성하세요.
+- 각 항목은 Baekjoon HTML 구조의 다음 요소에서 추출하세요:
+(JSON 스키마)
 {
-  "problem_title":  { "type": "string" },
-  "problem_explanation" : { "type": "string" },
-  "input_format":   { "type": "string" },
-  "output_format":  { "type": "string" },
-  "input_example":  { "type": "string" },
-  "output_example": { "type": "string" }
+  "problem_title": "string",
+  "problem_explanation": "string",
+  "input_format": "string",
+  "output_format": "string",
+  "input_example": "string",
+  "output_example": "string"
 }
 """;
 
 
     String queryTemplate2 = """
 (역할)
-당신은 Baekjoon 사이트의 문제를 풀고,해답코드를 작성한 뒤,  해답 코드를 활용해, **주어진 문제의 알고리즘적 복잡성과 핵심 로직의 개수를 고려하여 최대 4개의 독립적인 객관식 퀴즈**를 JSON 형식으로 생성하는 시스템입니다.
+당신은 Baekjoon 사이트(www.acmicpc.net)의 문제를 풀고,해답코드를 작성한 뒤,  해답 코드를 활용해, **주어진 문제의 알고리즘적 복잡성과 핵심 로직의 개수를 고려하여 최대 4개의 독립적인 객관식 퀴즈**를 JSON 형식으로 생성하는 시스템입니다.
 **응답을 JSON 배열 객체로만 출력**하세요.
 
 (문제 번호)
@@ -80,7 +93,7 @@ public class AttemptsController {
 그 후, 아래 JSON 스키마에 완벽히 맞춰서, **응답을 JSON 배열 객체로만 출력**하세요.
 
 (제약)
-- 문제는 {https://www.acmicpc.net/} 에서 크롤링 해오세요.
+- 문제는 인터넷에서 찾으세요.
 - 답변은 무조건 JSON 형식만을 답변해야 합니다.
 - 퀴즈 객체는 `question_number`, `code`, `quiz_text`, `choices`, `answer_choice`, `hint`, `rationale` 필드를 포함해야 합니다.
 -code와 모든 문자열 값 내 줄바꿈은 \\n으로 처리해야 합니다
@@ -106,57 +119,83 @@ public class AttemptsController {
     /** POST /api/attempts */
     /* 시간 남으면 비동기로 할지 생각해보자 */
     @PostMapping
-    public void /*ResponseEntity<String>*/ attempt (@Valid @RequestBody AttemptRequest req) throws Exception{
+    public ProblemResponseDto attempt (@Valid @RequestBody AttemptRequest req) throws Exception{
 //        System.out.println(req.tier());
         // 클라이언트가 요청한 티어와 레벨 (ex: 골드 4)
         BojProblemInfo bojProblemInfo = problemService.pickProblem(req.tier(), req.level());
 
         int problemNumber = bojProblemInfo.getProblemNum();
+        System.out.println("problemNumber = " + problemNumber);
         String query1 = queryTemplate1
-                .replace("{problemNumber}", Integer.toString(problemNumber));
+                .replace("{problem_id}", Integer.toString(problemNumber));
         String query2 = queryTemplate2
-                .replace("{problemNumber}", Integer.toString(problemNumber))
-                .replace("{requestLanguage}",req.language());
+                .replace("{problem_id}", Integer.toString(problemNumber))
+                .replace("{language}",req.language());
 
         List<String> prompts = List.of(query1,query2);
+
+        prompts.forEach(System.out::println);
         List<String> answers = parallelChat(prompts);
         List<String> cleanedAnswers = answers.stream()
                 .map(s -> stripJsonCodeFence(s)) // 메소드 참조(Method Reference)로 더 간결하게 표현 가능
                 .collect(Collectors.toList());
         cleanedAnswers.forEach(System.out::println);
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-//        TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<>() {};
-//        Map<String, Object> problemMap = objectMapper.readValue(cleanedAnswers.get(0), typeRef);
-//        Map<String, Object> quizMap = objectMapper.readValue(cleanedAnswers.get(1), typeRef);
-//        Map<String, Object> flatMergedMap = new LinkedHashMap<>(problemMap);
-//        flatMergedMap.putAll(quizMap);
-//        String flatMergedJson = objectMapper.writeValueAsString(flatMergedMap);
 
-//        JsonNode node = objectMapper.readTree(cleanedAnswers.get(0));
-//        JsonNode node1 = objectMapper.readTree(cleanedAnswers.get(1));
-//        String title         = node.get("title").asText();
-//        String description   = node.get("description").asText();
-//        String inputExample  = node.get("input_example").asText();
-//        String outputExample = node.get("output_example").asText();
-//        String inputFormat = node.get("input_format").asText();
-//        String outputFormat = node.get("output_format").asText();
-//        String code = node1.get("code").asText();
-//        JsonNode choicesNode = node1.get("choices");
-//        List<String> choicesList = new ArrayList<>();
-//
-//        String answerChoice = node1.get("answer_choice").asText();
-//
-//        System.out.println("title = " + title);
-//        System.out.println("description = " + description);
-//        System.out.println("inputExample = " + inputExample);
-//        System.out.println("outputExample = " + outputExample);
-//        System.out.println("inputFormat = " + inputFormat);
-//        System.out.println("outputFormat = " + outputFormat);
-//        System.out.println("code = " + code);
-//        System.out.println("choices = " + choicesList);
-//        System.out.println("answerChoice = " + answerChoice);
-        //return ResponseEntity.ok(answer);
+        ObjectMapper objectMapper = new ObjectMapper();
+        FirstStringParseDto problemDetail = objectMapper.readValue(cleanedAnswers.get(0), FirstStringParseDto.class);
+        List<SecondStringParseDto> quizzes = objectMapper.readValue(cleanedAnswers.get(1), new TypeReference<List<SecondStringParseDto>>() {});
+
+        if (quizzes == null || quizzes.isEmpty()) {
+            throw new IllegalStateException("Quiz data is missing.");
+        }
+        SecondStringParseDto targetQuiz = quizzes.get(0);
+
+        ProblemResponseDto responseBody = new ProblemResponseDto(
+                (long) problemNumber,
+                req.tier().getDisplayName(),
+                String.valueOf(req.level()),
+                req.language(),
+                problemDetail.problemTitle(),            // s1에서 추출
+                problemDetail.problemExplanation(),      // s1에서 추출
+                targetQuiz.quizText(),                   // s2[0]에서 추출
+                targetQuiz.code(),                       // s2[0]에서 추출
+                targetQuiz.choices(),                    // s2[0]에서 추출
+                targetQuiz.answerChoice(),               // s2[0]에서 추출
+                targetQuiz.rationale()                   // s2[0]에서 추출
+        );
+
+        System.out.println(String.valueOf(targetQuiz.choices()));
+        String choicesJson = objectMapper.writeValueAsString(targetQuiz.choices());
+        String rationaleJson = objectMapper.writeValueAsString(targetQuiz.rationale());
+        Problem p = Problem.builder()
+                .problemNum(problemNumber)
+                .title(problemDetail.problemTitle())
+                .explanation(problemDetail.problemExplanation())
+                .inputFormat(problemDetail.inputFormat())
+                .outputFormat(problemDetail.outputFormat())
+                .inputExample(problemDetail.inputExample())
+                .outputExample(problemDetail.outputExample())
+                .code(targetQuiz.code())
+                .choices(choicesJson)
+                .answerChoice(String.valueOf(targetQuiz.answerChoice()))
+                .rationale(rationaleJson)
+                .quizText(targetQuiz.quizText())
+                .problemTier(ProblemTier.valueOf(req.tier().getDisplayName()))
+                .problemLevel(req.level()).build();
+
+        problemRepository.save(p);
+
+        Attempt a = Attempt.builder()
+                .user(userRepository.findById((long) req.userId()).get())
+                .problem(p)
+                .status(Status.ATTEMPTING)
+                .attemptLanguage(PrimaryLanguage.valueOf(req.language()))
+                .build();
+
+        attemptRepository.save(a);
+
+        return responseBody;
+
     }
 
     // 기존 parallelChat 예시
