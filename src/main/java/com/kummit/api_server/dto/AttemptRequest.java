@@ -9,5 +9,6 @@ import jakarta.validation.constraints.NotNull;
 public record AttemptRequest(
         @NotNull ProblemTier tier,
         @Min(1) @Max(5) byte level,
-        @NotNull String language
+        @NotNull String language,
+        @NotNull int userId
 ) {}
