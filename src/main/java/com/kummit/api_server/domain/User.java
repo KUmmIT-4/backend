@@ -34,13 +34,16 @@ public class User {
     /* ---------- 실력/통계 ---------- */
     @Enumerated(EnumType.STRING)
     @Column(name = "coding_tier", nullable = false, length = 6)
+    @Setter
     private CodingTier codingTier;
 
     @Column(name = "coding_level", nullable = false)
+    @Setter
     private Byte codingLevel;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "primary_language", nullable = false, length = 12)
+    @Setter
     private PrimaryLanguage primaryLanguage;
 
     @Column(nullable = false)

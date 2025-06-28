@@ -3,7 +3,9 @@ package com.kummit.api_server.controller;
 import com.kummit.api_server.SessionStore;
 import com.kummit.api_server.domain.User;
 import com.kummit.api_server.dto.request.UserLoginRequest;
+import com.kummit.api_server.dto.request.UserUpdateRequest;
 import com.kummit.api_server.dto.response.UserResponse;
+import com.kummit.api_server.dto.response.UserUpdateResponse;
 import com.kummit.api_server.enums.CodingTier;
 import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.repository.UserRepository;
@@ -136,5 +138,32 @@ public class UserController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/me")
+    public ResponseEntity<?> updateUserInfo( // 사용자 정보 수정
+                                             @RequestBody UserUpdateRequest request,
+                                             @CookieValue(value = "session_id", required = false) String sessionId
+    ) {
+        if (sessionId == null || !sessionStore.exists(sessionId)) {
+            return ResponseEntity.status(401).body("쿠키에 사용자 정보가 없습니다.");
+        }
+
+        Long userId = sessionStore.getUserId(sessionId);
+
+        try {
+            User user = userService.getUser(userId);
+            User updatedUser = userService.updateUserInfo(user.getId(), request);
+
+            return ResponseEntity.ok(
+                    new UserUpdateResponse(
+                            updatedUser.getId(),
+                            updatedUser.getCodingTier().name(),
+                            updatedUser.getCodingLevel(),
+                            updatedUser.getPrimaryLanguage().name()
+                    ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body(e.getMessage());
+        }
     }
 }

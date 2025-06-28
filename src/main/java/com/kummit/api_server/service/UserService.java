@@ -1,5 +1,6 @@
 package com.kummit.api_server.service;
 
+import com.kummit.api_server.dto.request.UserUpdateRequest;
 import com.kummit.api_server.enums.PrimaryLanguage;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,5 +50,19 @@ public class UserService {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
+    }
+
+    public User updateUserInfo(Long userId, UserUpdateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        CodingTier codingTier = CodingTier.valueOf(request.tier().toUpperCase());
+        user.setCodingTier(codingTier);
+
+        user.setCodingLevel(request.level());
+
+        user.setPrimaryLanguage(PrimaryLanguage.valueOf(request.language().toUpperCase()));
+
+        return userRepository.save(user);
     }
 }
