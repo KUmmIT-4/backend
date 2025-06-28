@@ -1,6 +1,10 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,6 +18,10 @@ import java.util.List;
  * 가벼운 메타 정보는 {@link BojProblemInfo} 가 담당한다.
  */
 @Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@RequiredArgsConstructor
+@Getter
 @Table(
     name = "problem",
     indexes = {
@@ -22,27 +30,16 @@ import java.util.List;
 )
 public class Problem {
 
-    /* ---------- PK ---------- */
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "problem_id")
     private Long id;
 
-    /* ---------- FK : boj_problem_info.problem_num ---------- */
-
-    /**
-     * BOJ 원본 문제 번호.  
-     *  insertable/updatable = false → 값은 애플리케이션에서 세팅하지만
-     *  JPA 가 FK 컬럼을 직접 변경하지는 않도록 함.
-     */
-    @Column(name = "problem_num", nullable = false, unique = true)
-    private Integer problemNum;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "problem_num", referencedColumnName = "problem_num",
                 insertable = false, updatable = false)
-    private BojProblemInfo meta;         // 조회용 (옵션)
+    private BojProblemInfo problemNum;         // 조회용 (옵션)
 
     /* ---------- 본문 ---------- */
 
@@ -75,15 +72,6 @@ public class Problem {
     @Column(name = "answer_choice", nullable = false, length = 255)
     private String answerChoice;
 
-    /* ---------- 메타 ---------- */
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "problem_tier", nullable = false, length = 6)
-    private ProblemTier problemTier;     // BRONZE / SILVER / GOLD
-
-    @Column(name = "problem_level", nullable = false)
-    private Byte problemLevel;           // 1 ~ 5
-
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -99,56 +87,6 @@ public class Problem {
                orphanRemoval = true)
     private List<Record> records = new ArrayList<>();
 
-    /* ---------- 생성자 ---------- */
-
-    protected Problem() { } // JPA 기본 생성자
-
-    public Problem(Integer problemNum,
-                   String title,
-                   String explanation,
-                   String inputFormat,
-                   String outputFormat,
-                   String inputExample,
-                   String outputExample,
-                   String code,
-                   String choices,
-                   String answerChoice,
-                   ProblemTier problemTier,
-                   Byte problemLevel) {
-
-        this.problemNum      = problemNum;
-        this.title           = title;
-        this.explanation     = explanation;
-        this.inputFormat     = inputFormat;
-        this.outputFormat    = outputFormat;
-        this.inputExample    = inputExample;
-        this.outputExample   = outputExample;
-        this.code            = code;
-        this.choices         = choices;
-        this.answerChoice    = answerChoice;
-        this.problemTier     = problemTier;
-        this.problemLevel    = problemLevel;
-    }
-
     /* ---------- ENUM ---------- */
     public enum ProblemTier { BRONZE, SILVER, GOLD }
-
-    /* ---------- Getter ---------- */
-    public Long             getId()            { return id; }
-    public Integer          getProblemNum()    { return problemNum; }
-    public String           getTitle()         { return title; }
-    public String           getExplanation()   { return explanation; }
-    public String           getInputFormat()   { return inputFormat; }
-    public String           getOutputFormat()  { return outputFormat; }
-    public String           getInputExample()  { return inputExample; }
-    public String           getOutputExample() { return outputExample; }
-    public String           getCode()          { return code; }
-    public String           getChoices()       { return choices; }
-    public String           getAnswerChoice()  { return answerChoice; }
-    public ProblemTier      getProblemTier()   { return problemTier; }
-    public Byte             getProblemLevel()  { return problemLevel; }
-    public LocalDateTime    getCreatedAt()     { return createdAt; }
-    public LocalDateTime    getUpdatedAt()     { return updatedAt; }
-    public List<Record>     getRecords()       { return records; }
-    public BojProblemInfo   getMeta()          { return meta; }
 }

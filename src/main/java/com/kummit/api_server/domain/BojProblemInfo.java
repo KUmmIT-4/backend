@@ -1,6 +1,10 @@
 package com.kummit.api_server.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 /**
  * solved.ac / BOJ 문제 메타데이터 LOOK-UP 테이블 매핑
@@ -10,7 +14,11 @@ import jakarta.persistence.*;
  *    가벼운 조회 전용 엔티티로 설계
  */
 @Entity
-@Table(name = "boj_problem_info")
+@Table(name = "bojprobleminfo")
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class BojProblemInfo {
 
     /* ---------- PK ---------- */
@@ -30,32 +38,9 @@ public class BojProblemInfo {
     private Byte problemLevel;                // 1 ~ 5
 
     /** solved.ac 기준 해결자 수 (통계용) */
-    @Column(name = "solved_user_count", nullable = false)
-    private Integer solvedUserCount;
+    @Column(name = "accept_user_count", nullable = false)
+    private Integer acceptUserCount;
 
-    /* ---------- 생성자 ---------- */
-
-    /** JPA 기본 생성자 (Proxy용) – 직접 호출 금지 */
-    protected BojProblemInfo() { }
-
-    public BojProblemInfo(Integer problemNum,
-                          ProblemTier problemTier,
-                          Byte problemLevel,
-                          Integer solvedUserCount) {
-        this.problemNum = problemNum;
-        this.problemTier = problemTier;
-        this.problemLevel = problemLevel;
-        this.solvedUserCount = solvedUserCount;
-    }
-
-    /* ---------- ENUM ---------- */
 
     public enum ProblemTier { BRONZE, SILVER, GOLD }
-
-    /* ---------- Getter ---------- */
-
-    public Integer getProblemNum()        { return problemNum; }
-    public ProblemTier getProblemTier()   { return problemTier; }
-    public Byte getProblemLevel()         { return problemLevel; }
-    public Integer getSolvedUserCount()   { return solvedUserCount; }
 }

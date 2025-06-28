@@ -26,14 +26,7 @@ public class UserService {
         // Integer to Byte conversion for codingLevel
         Byte level = req.getCodingLevel() == null ? null : req.getCodingLevel().byteValue();
 
-        User user = new User(
-            req.getUsername(),
-            req.getPassword(),
-            req.getEmail(),
-            tier,
-            level,
-            lang
-        );
+        //User user = new User(req.getUsername(),req.getPassword(),req.getCodingTier(),req.getCodingLevel(),req.getPrimaryLanguage(),);
         return userRepository.save(user).getId();
     }
 
