@@ -1,4 +1,4 @@
-package com.kummit.api_server.dto;
+package com.kummit.api_server.dto.response;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
