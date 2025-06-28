@@ -1,27 +1,27 @@
 package com.kummit.api_server.domain;
 
+import com.kummit.api_server.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.kummit.api_server.enums.Status;
 
 import java.time.LocalDateTime;
 
 /**
  * 한 사용자가 한 문제를 풀이(시도)한 단일 기록.
- *  - 제출 시각 · 선택지(픽) · 채점 결과 등을 저장한다.
+ *  - 제출 시각 · 선택지 · 채점 결과 등을 저장한다.
  */
-@Entity
-@Table(name = "record")
 @Getter
-public class Record {
+@Entity
+@Table(name = "attempt")              // DB 테이블명: attempt  (기존 record 를 그대로 쓰려면 "record")
+public class Attempt {
 
     /* ---------- PK ---------- */
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "record_id")
+    @Column(name = "attempt_id")      // 컬럼명: attempt_id (바꾸기 싫으면 record_id 유지 가능)
     private Long id;
 
     /* ---------- FK ---------- */
@@ -37,7 +37,7 @@ public class Record {
     /* ---------- 풀이 상태 ---------- */
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 12)
     private Status status = Status.ATTEMPTING;
 
     /** 실제 코드 제출 시각 (null : 아직 미제출) */
@@ -60,18 +60,18 @@ public class Record {
 
     /* ---------- 생성자 ---------- */
 
-    protected Record() { }         // JPA 기본 생성자
+    protected Attempt() { }        // JPA 기본 생성자
 
-    public Record(User user,
-                  Problem problem,
-                  Status status,
-                  LocalDateTime submittedAt,
-                  Byte userChoice) {
+    public Attempt(User user,
+                   Problem problem,
+                   Status status,
+                   LocalDateTime submittedAt,
+                   Byte userChoice) {
 
-        this.user         = user;
-        this.problem      = problem;
-        this.status       = status;
-        this.submittedAt  = submittedAt;
-        this.userChoice   = userChoice;
+        this.user        = user;
+        this.problem     = problem;
+        this.status      = status;
+        this.submittedAt = submittedAt;
+        this.userChoice  = userChoice;
     }
 }
