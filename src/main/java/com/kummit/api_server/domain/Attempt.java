@@ -3,6 +3,7 @@ package com.kummit.api_server.domain;
 import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.enums.Status;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -66,6 +67,7 @@ public class Attempt {
 
     protected Attempt() { }        // JPA 기본 생성자
 
+    @Builder
     public Attempt(User user,
                    Problem problem,
                    Status status,

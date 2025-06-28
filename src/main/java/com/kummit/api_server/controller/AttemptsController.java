@@ -4,8 +4,17 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.kummit.api_server.SessionStore;
+import com.kummit.api_server.domain.Attempt;
 import com.kummit.api_server.domain.BojProblemInfo;
+import com.kummit.api_server.domain.Problem;
 import com.kummit.api_server.dto.*;
+import com.kummit.api_server.enums.PrimaryLanguage;
+import com.kummit.api_server.enums.ProblemTier;
+import com.kummit.api_server.enums.Status;
+import com.kummit.api_server.repository.AttemptRepository;
+import com.kummit.api_server.repository.ProblemRepository;
+import com.kummit.api_server.repository.UserRepository;
 import com.kummit.api_server.service.GeminiService;
 import com.kummit.api_server.service.ProblemService;
 import jakarta.validation.Valid;
@@ -29,6 +38,13 @@ public class AttemptsController {
     private final ProblemService problemService;
     private final GeminiService geminiService;
     private final ObjectMapper objectMapper;
+
+    private final SessionStore sessionStore;
+
+    final UserRepository userRepository;
+    final ProblemRepository problemRepository;
+    final AttemptRepository attemptRepository;
+
 
     String queryTemplate1 = """
 (역할)
@@ -148,40 +164,38 @@ public class AttemptsController {
                 targetQuiz.rationale()                   // s2[0]에서 추출
         );
 
-        return responseBody;
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-//        TypeReference<LinkedHashMap<String, Object>> typeRef = new TypeReference<>() {};
-//        Map<String, Object> problemMap = objectMapper.readValue(cleanedAnswers.get(0), typeRef);
-//        Map<String, Object> quizMap = objectMapper.readValue(cleanedAnswers.get(1), typeRef);
-//        Map<String, Object> flatMergedMap = new LinkedHashMap<>(problemMap);
-//        flatMergedMap.putAll(quizMap);
-//        String flatMergedJson = objectMapper.writeValueAsString(flatMergedMap);
+        System.out.println(String.valueOf(targetQuiz.choices()));
+        String choicesJson = objectMapper.writeValueAsString(targetQuiz.choices());
+        String rationaleJson = objectMapper.writeValueAsString(targetQuiz.rationale());
+        Problem p = Problem.builder()
+                .problemNum(problemNumber)
+                .title(problemDetail.problemTitle())
+                .explanation(problemDetail.problemExplanation())
+                .inputFormat(problemDetail.inputFormat())
+                .outputFormat(problemDetail.outputFormat())
+                .inputExample(problemDetail.inputExample())
+                .outputExample(problemDetail.outputExample())
+                .code(targetQuiz.code())
+                .choices(choicesJson)
+                .answerChoice(String.valueOf(targetQuiz.answerChoice()))
+                .rationale(rationaleJson)
+                .quizText(targetQuiz.quizText())
+                .problemTier(ProblemTier.valueOf(req.tier().getDisplayName()))
+                .problemLevel(req.level()).build();
 
-//        JsonNode node = objectMapper.readTree(cleanedAnswers.get(0));
-//        JsonNode node1 = objectMapper.readTree(cleanedAnswers.get(1));
-//        String title         = node.get("title").asText();
-//        String description   = node.get("description").asText();
-//        String inputExample  = node.get("input_example").asText();
-//        String outputExample = node.get("output_example").asText();
-//        String inputFormat = node.get("input_format").asText();
-//        String outputFormat = node.get("output_format").asText();
-//        String code = node1.get("code").asText();
-//        JsonNode choicesNode = node1.get("choices");
-//        List<String> choicesList = new ArrayList<>();
-//
-//        String answerChoice = node1.get("answer_choice").asText();
-//
-//        System.out.println("title = " + title);
-//        System.out.println("description = " + description);
-//        System.out.println("inputExample = " + inputExample);
-//        System.out.println("outputExample = " + outputExample);
-//        System.out.println("inputFormat = " + inputFormat);
-//        System.out.println("outputFormat = " + outputFormat);
-//        System.out.println("code = " + code);
-//        System.out.println("choices = " + choicesList);
-//        System.out.println("answerChoice = " + answerChoice);
-        //return ResponseEntity.ok(answer);
+        problemRepository.save(p);
+
+        Attempt a = Attempt.builder()
+                .user(userRepository.findById((long) req.userId()).get())
+                .problem(p)
+                .status(Status.ATTEMPTING)
+                .attemptLanguage(PrimaryLanguage.valueOf(req.language()))
+                .build();
+
+        attemptRepository.save(a);
+
+        return responseBody;
+
     }
 
     // 기존 parallelChat 예시

@@ -2,6 +2,7 @@ package com.kummit.api_server.domain;
 
 import com.kummit.api_server.enums.ProblemTier;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -118,6 +119,7 @@ public class Problem {
 
     protected Problem() { } // JPA 기본 생성자
 
+    @Builder
     public Problem(Integer problemNum,
                    String title,
                    String explanation,
