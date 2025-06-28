@@ -5,6 +5,7 @@ public record AttemptSummaryResponse(
         Long problem_id,
         String title,
         String status,   // 예: "completed", "progress"
+        String attemptLanguage,
         String problemTier,
         byte problemLevel
 ) {}

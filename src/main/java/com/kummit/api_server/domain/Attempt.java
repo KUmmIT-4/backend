@@ -1,5 +1,6 @@
 package com.kummit.api_server.domain;
 
+import com.kummit.api_server.enums.PrimaryLanguage;
 import com.kummit.api_server.enums.Status;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -35,6 +36,9 @@ public class Attempt {
     private Problem problem;
 
     /* ---------- 풀이 상태 ---------- */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "attempt_language", nullable = false, length = 12)
+    private PrimaryLanguage attemptLanguage;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 12)
@@ -66,12 +70,14 @@ public class Attempt {
                    Problem problem,
                    Status status,
                    LocalDateTime submittedAt,
-                   Byte userChoice) {
+                   Byte userChoice,
+                   PrimaryLanguage attemptLanguage) {
 
-        this.user        = user;
-        this.problem     = problem;
-        this.status      = status;
+        this.user = user;
+        this.problem = problem;
+        this.status = status;
         this.submittedAt = submittedAt;
-        this.userChoice  = userChoice;
+        this.userChoice = userChoice;
+        this.attemptLanguage = attemptLanguage;
     }
 }
